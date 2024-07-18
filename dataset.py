@@ -51,7 +51,7 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
     if len(im_data.shape) == 3:
         im_bands, im_height, im_width = im_data.shape
     else:
-          im_bands, (im_height, im_width) = 1, im_data.shape
+        im_bands, (im_height, im_width) = 1, im_data.shape
     # 创建文件
     driver = gdal.GetDriverByName("GTiff")
     dataset = driver.Create(path, int(im_width), int(im_height), int(im_bands), datatype)
@@ -59,10 +59,10 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
         dataset.SetGeoTransform(im_geotrans)  # 写入仿射变换参数
         dataset.SetProjection(im_proj)  # 写入投影
     if im_bands == 1:
-      dataset.GetRasterBand(1).WriteArray(im_data)
+        dataset.GetRasterBand(1).WriteArray(im_data)
     else:
         for i in range(im_bands):
-           dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
+            dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
 
@@ -85,14 +85,15 @@ class DatasetImageMaskContourDist(Dataset):
         image = load_image(os.path.join(self.dir,img_file_name+'.tif'))
         mask = load_mask(os.path.join(self.dir,img_file_name+'.tif'))
         contour = load_contour(os.path.join(self.dir,img_file_name+'.tif'))
-        dist = load_distance(os.path.join(self.dir,img_file_name+'.tif'), self.distance_type)
+        # dist = load_distance(os.path.join(self.dir,img_file_name+'.tif'), self.distance_type)
 
-        return img_file_name, image, mask, contour, dist
+        return img_file_name, image, mask, contour
 
 
 def load_image(path):
 
-    img = Image.open(path)
+    # Converting to RGB since I have an alpha channel on my images
+    img = Image.open(path).convert('RGB')
     data_transforms = transforms.Compose(
         [
            # transforms.Resize(256),

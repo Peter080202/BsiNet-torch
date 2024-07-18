@@ -39,7 +39,8 @@ def train_model(model, targets, model_type, criterion, optimizer):
         with torch.set_grad_enabled(True):
             outputs = model(inputs)
             loss = criterion(
-                outputs[0], outputs[1], outputs[2], targets[0], targets[1], targets[2]
+                # Excluding since I do not have outputs3 + targets3
+                outputs[0], outputs[1], targets[0], targets[1]
             )
             loss.backward()
             optimizer.step()
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     args = create_train_arg_parser().parse_args()
 
     args.distance_type = 'dist_contour'
-   # args.pretrained_model_path = './best_merge_model_article/85.pt'
+    # args.pretrained_model_path = './best_merge_model_article/85.pt'
 
     args.train_path = './train/image/'
     # args.val_path = './XJ_goole/test/image/'
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         model = nn.DataParallel(model)
 
     model = model.to(device)
-  #  summary(model, input_size=(3, 256, 256))
+    #  summary(model, input_size=(3, 256, 256))
 
     epoch_start = "0"
     if args.use_pretrained:
@@ -113,21 +114,22 @@ if __name__ == "__main__":
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-  #  optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+    #  optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, int(1e10), eta_min=1e-5)
-   # scheduler = optim.lr_scheduler.StepLR(optimizer, 50, 0.1)    #新加的
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, 50, 0.1)    #新加的
     criterion = define_loss(args.model_type)
 
 
     for epoch in tqdm(
-        range(int(epoch_start) + 1, int(epoch_start) + 1 + args.num_epochs)
+            range(int(epoch_start) + 1, int(epoch_start) + 1 + args.num_epochs)
     ):
 
         global_step = epoch * len(trainLoader)
         running_loss = 0.0
 
-        for i, (img_file_name, inputs, targets1, targets2,targets3) in enumerate(
-            tqdm(trainLoader)
+        # Excluding since I do not have outputs3 + targets3
+        for i, (img_file_name, inputs, targets1, targets2) in enumerate(
+                tqdm(trainLoader)
         ):
 
             model.train()
@@ -135,9 +137,10 @@ if __name__ == "__main__":
             inputs = inputs.to(device)
             targets1 = targets1.to(device)
             targets2 = targets2.to(device)
-            targets3 = targets3.to(device)
+            # Excluding since I do not have outputs3 + targets3
+            # targets3 = targets3.to(device)
 
-            targets = [targets1, targets2,targets3]
+            targets = [targets1, targets2]
 
 
             loss = train_model(model, targets, args.model_type, criterion, optimizer)
